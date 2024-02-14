@@ -1,0 +1,76 @@
+                                 Homework 3
+                               DEADLINE: Due Feb. 13
+
+SUBMISSION:
+  As always, you will submit a tarball (hw4.tar.gz) and a README file.
+  You _must_ verify 'make check', or explain in  README what isn't working.
+  In addition, you must include open.txt and read.txt (see below).
+
+1.  Rewrite sh.c to work on modern Linux.
+    For full credit, you can change at most 30 lines.
+    Your file must be called 'mysh.c'.
+    You must make the minimum of changes to sh.c.  We will run:
+      diff xv6-sh.c mysh.c
+    
+    where xv6-sh.c is the original in xv6 and mysh.c is code that works in Linux.
+    
+    In particular, some more recent syscalls that you will need are:
+      fprintf(stderr, <FORMAT>, <ARGS>);
+      fgets(<STRING>, <SIZE>, stdin);
+      execvp(...);
+    
+    [ WARNING:  This early sh.c can only handle 10 args on command line. ]
+
+2.  Read about the syscall 'man 2 stat'.  Then write a short program,
+     inode.c, that will print the inode number of a file.
+
+3.  Rewrite xv6-ls.c to work on modern Linux.
+    For full credit, you can change at most 35 lines.
+    Your file must be called 'myls.c'.
+    You must make the minimum of changes to sh.c.  We will run:
+      diff xv6-ls.c myls.c | grep '^>' | wc -l
+    where xv6-ls.c is the original in xv6 and myls.c is code that works
+    in Linux.
+    
+    You will also need to add near the top (after the '#include'):
+      #define DIRSIZ 40
+    In particular, some more recent syscalls that you will need are:
+      struct dirent readdir(DIR *dirp);  [ SEE 'man 3 readdir' ]
+        [ HINT: CHANGE 'struct dirent' to the higher-level type, 'DIR' ]
+      DIR *opendir(const char *name);
+      int closedir(DIR *dirp);
+      For an example program using these, see:
+        https://pubs.opengroup.org/onlinepubs/007904875/functions/readdir_r.html
+        [ Search on "EXAMPLES" ]
+    NOTE:  'man 2 stat' will show you the entries of 'struct stat'.
+    NOTE:  If you see errors in fprintf, such as 'long int' is not 'int',
+           then try casting the argument to an int:  fprintf("%d\n", (int)XXX);
+    [ HINT: Needs dirent.h ; Change your '#include' among other small changes ]
+    [ HINT: In 'man 2 stat', note that 'file type' is st_mode.
+      Note also that 'man 2 stat' says to look at 'man 7 inode' for 'file type'. ]
+
+4.  You must include a file, open.txt, which explains how 'open' is implemented.
+
+    Read ulibc.c:stat() to see how xv6 computes the inode.
+    As you will see, 'open()' is used to get a file descriptor for
+    the path (filename), and then 'fstat()' is used to take that
+    file descriptor and determine the inode.  Let's explore how
+    the xv6 operating system converts from the filename.
+
+    Start with sys_open() in sysfile.c.  You will see that eventually,
+    namex() in fs.c is called.  Let's assume that the argument
+    'name' for namex() is '/usr/bin/ls'.  Describe all steps inside
+    the execution of namex(), until it returns with the 'inode *'
+    (the indoe pointer).
+
+5.  You must include a file, read.txt, which explains how 'read' is implemented.
+
+    Read 'man 2 read' for review.
+    Now, start with 'sys_read()' in sysfile.c.  As you will see, this
+    calls fileread() in file.c.  This uses a 'struct file *' (where
+    a file descriptor indirectly points to a 'struct file').
+    Eventually, readi() is called, based on the inode.  Describe
+    how readi() reads from an ordinary file into the destination, dst.
+    NOTE:  The function bread() means to read a block, based
+           on its block number, 'blockno'.  You do not have to
+           explain how 'bread()' works.

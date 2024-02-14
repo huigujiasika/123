@@ -1,0 +1,29 @@
+Let's describe the execution steps of the namex() function for the given path /usr/bin/ls.
+
+
+Firstly, two pointer variables ip and next are declared, representing the current inode and the next inode.
+
+If the first character of the path is '/', the iget(ROOTDEV, ROOTINO) function is called to obtain the inode of the root directory. Otherwise, the inode of the current working directory of the current process is duplicated using idup(myproc()->cwd).
+
+Inside the while loop, the loop continues as long as path is not empty. In each iteration, the skipelem(path, name) function is called to parse the next element from path and assign it to name, while returning the remaining path.
+
+The ilock(ip) function is called to lock the current inode.
+
+The type of the current inode is checked. If it is not a directory (T_DIR), the current inode is unlocked and released, and the function returns 0 indicating failure.
+
+If nameiparent is true and the remaining path path is an empty string, it means that the previous directory of the target file is reached. In this case, the current inode is unlocked and returned.
+
+The dirlookup(ip, name, 0) function is called to look up the corresponding inode in the current directory based on the specified name. If the lookup fails, the current inode is unlocked and released, and the function returns 0 indicating failure.
+
+The current inode is unlocked and released, and the next is set to the inode found in the previous step.
+
+The loop goes back to the beginning, and the ip is set to the next inode for the next iteration.
+
+If nameiparent is true, indicating the request to return the inode of the parent directory, the current inode is released, and the function returns 0 indicating failure.
+
+If the loop ends, it means that the entire file path has been successfully parsed, and the last inode is returned.
+
+
+Summary:
+The namex() function sequentially parses directories in the given file path and returns the final inode pointer. It iterates through each element in the path, looks up the corresponding directory entry, 
+and locks and unlocks the inode when necessary. If the parsing fails or encounters an invalid path, it returns 0 indicating failure.

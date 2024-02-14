@@ -1,0 +1,22 @@
+Now let's explain how the readi() function works:
+
+First, if the inode's type field is T_DEV, it indicates that the corresponding file is a device file rather than an ordinary file. 
+In this case, we check if the major device number (major) is valid and if the corresponding device driver supports the read operation. If these conditions are not met, the function returns -1.
+w Otherwise, it calls the read function of the device driver to perform the actual read operation and returns the result.
+
+If the inode corresponds to an ordinary file, the following steps are executed:
+a. Firstly, we check if the given read offset off exceeds the file's size (ip->size) or if off + n < off, which could result in an out-of-bounds access. If this is the case, the function returns -1.
+b. Next, if the requested data exceeds the size of the file, we adjust the length of the read (n) to not exceed the remaining readable portion of the file.
+c. Then, we use a loop to gradually read the data. In each iteration, we perform the following operations:
+   i. Calculate the corresponding block number (blockno) based on the given offset off by calling the bmap() function.
+   ii. Read the corresponding data block using the bread() function (bp = bread(ip->dev, blockno)).
+   iii. Calculate the data length m for the current iteration. Its value is the minimum between the remaining unread data length n - tot and the remaining number of readable bytes in the current data block BSIZE - off%BSIZE.
+   iv. Copy the data from the offset position off%BSIZE of the data block to the destination buffer dst using the memmove() function.
+   v. Release the read data block by calling the brelse() function.
+   vi. Update the total read byte count tot, the offset off, and the destination buffer pointer dst for the next iteration.
+   d. After the loop finishes, the function returns the total number of bytes read n.
+
+
+
+To summarize, the readi() function gradually reads data from the data blocks of an ordinary file based on the given offset and length, and copies it into the destination buffer.
+ This way, the function implements the functionality of reading data from an ordinary file.
